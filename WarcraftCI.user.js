@@ -33,6 +33,16 @@ var audioMap = [
     name: 'Uploaded Patch',
     url: 'http://www.thanatosrealms.com/war2/sounds/orcs/basic-orc-voices/acknowledge1.wav',
     search: 'Uploaded patch set'
+  },
+  {
+    name: 'Comment',
+    url: 'http://www.thanatosrealms.com/war2/sounds/humans/elven-archer/annoyed1.wav',
+    search: 'comment'
+  },
+  {
+    name: 'Code Review',
+    url: 'http://www.thanatosrealms.com/war2/sounds/humans/knight/acknowledge4.wav',
+    search: 'Code-Review'
   }
 ];
 
