@@ -81,10 +81,18 @@ var playUrl = function (url) {
   audio.play();
 }
 
-if(window.location.href.match('/c/')){
-  setTimeout(function(event){
-    setNewMessageObserver();
-    var latestEvent = findLatestEvent();
-    playUrl(latestEvent.url);
-  }, timeout);
+
+var lookForUpdate = function(){
+  var urlMatch = window.location.href.toString().match(/\/\d+?\/?\d+$/);
+  if (urlMatch && urlMatch.length === 1) {
+    setTimeout(function(event){
+      setNewMessageObserver();
+      var latestEvent = findLatestEvent();
+      playUrl(latestEvent.url);
+    }, timeout);
+  }
 }
+
+lookForUpdate();
+window.addEventListener("hashchange", lookForUpdate);
+
