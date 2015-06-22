@@ -10,7 +10,7 @@
 
 // HACK: SPA adds things after document load. 
 // Might have to be increased on slower computers.
-var timeout = 3000; 
+var timeout = 1500;
 
 var audioMap = [
   {
@@ -51,7 +51,7 @@ var setNewMessageObserver = function() {
   var observer = new MutationObserver(function(mutations){
     document.location.reload();
   });
-  // Yellow notification is added to the last screen element when comments are submitted 
+  // Yellow notification is added to the last screen element when comments are submitted
   var watchElement = document.getElementsByClassName("screen")[0].lastChild;
   observer.observe(watchElement, config);
 }
