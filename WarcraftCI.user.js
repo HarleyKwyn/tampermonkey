@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Warcraft CI
 // @namespace    http://your.homepage/
-// @version      1.1
+// @version      1.2
 // @description  enter something useful
 // @author       Kwyn Meagher
 // @include      https://gerrit.nexgen.neustar.biz/*
@@ -10,7 +10,17 @@
 
 // HACK: SPA adds things after document load. 
 // Might have to be increased on slower computers.
-var timeout = 1500;
+var timeout = 1750;
+
+/* TODO:  updates on your own tickets, and on your pair partners, 
+so it would be good to have a "user" list for checking what reviews to trigger notifications on.
+I believe the page contains a single link for the author with 'title="user@neustar.biz"
+so you could have the page check for that string...
+*/
+
+var options = {
+  mergeNotification: false
+};
 
 var audioMap = [
   {
@@ -57,10 +67,14 @@ var setNewMessageObserver = function() {
 }
 
 var findLatestEvent = function() {
+  var emptyDefault = { htmlIndex: -1, url: ''};
   // reduce to find which index is greatest
-
   var htmlText = document.documentElement.innerHTML;
-  var firstPatch = htmlText.indexOf('Uploaded patch set 1');
+  var firstPatch = htmlText.lastIndexOf('Uploaded patch set 1');
+  var merged = htmlText.lastIndexOf('succesfully merged');
+  if(!options.mergeNotification && merged > -1){
+    return [emptyDefault];
+  }
 
   return audioMap.reduce(function(latest, item, audioMapIndex){
     var lastOccurance = htmlText.lastIndexOf(item.search);
@@ -72,7 +86,7 @@ var findLatestEvent = function() {
     } else {
       return latest;
     }
-  }, { htmlIndex: -1, url: ''});
+  }, emptyDefault);
 }
 
 var playUrl = function (url) {
@@ -92,7 +106,6 @@ var lookForUpdate = function(){
     }, timeout);
   }
 }
-
 lookForUpdate();
 window.addEventListener("hashchange", lookForUpdate);
 
