@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Warcraft CI
 // @namespace    http://your.homepage/
-// @version      1.0
+// @version      1.1
 // @description  enter something useful
 // @author       Kwyn Meagher
 // @include      https://gerrit.nexgen.neustar.biz/*
@@ -18,7 +18,6 @@ var audioMap = [
     url:'http://www.thanatosrealms.com/war2/sounds/orcs/basic-orc-voices/work-complete.wav',
     search: 'SUCCESS'
   },
-  // buildFailure: 'http://www.thanatosrealms.com/war2/sounds/orcs/basic-orc-voices/death.wav',
   {
     name: 'Build Failure',
     url: 'http://www.thanatosrealms.com/war2/sounds/orcs/basic-orc-voices/help2.wav',
@@ -59,10 +58,13 @@ var setNewMessageObserver = function() {
 
 var findLatestEvent = function() {
   // reduce to find which index is greatest
+
   var htmlText = document.documentElement.innerHTML;
+  var firstPatch = htmlText.indexOf('Uploaded patch set 1');
+
   return audioMap.reduce(function(latest, item, audioMapIndex){
     var lastOccurance = htmlText.lastIndexOf(item.search);
-    if(lastOccurance > latest.htmlIndex){
+    if(lastOccurance > latest.htmlIndex && lastOccurance >= firstPatch){
       return {
         htmlIndex: lastOccurance,
         url: item.url
@@ -73,16 +75,16 @@ var findLatestEvent = function() {
   }, { htmlIndex: -1, url: ''});
 }
 
-
 var playUrl = function (url) {
-  var audio = document.createElement('audio'); 
+  var audio = document.createElement('audio');
   audio.src = url;
   audio.play();
 }
 
-
-setTimeout(function(event){
-  setNewMessageObserver();
-  var latestEvent = findLatestEvent();
-  playUrl(latestEvent.url);  
-}, timeout);
+if(window.location.href.match('/c/')){
+  setTimeout(function(event){
+    setNewMessageObserver();
+    var latestEvent = findLatestEvent();
+    playUrl(latestEvent.url);
+  }, timeout);
+}
