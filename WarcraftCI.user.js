@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Warcraft CI
 // @namespace    http://your.homepage/
-// @version      1.2
+// @version      1.2.1
 // @description  enter something useful
 // @author       Kwyn Meagher
 // @include      https://gerrit.nexgen.neustar.biz/*
@@ -49,9 +49,14 @@ var audioMap = [
     search: 'comment'
   },
   {
-    name: 'Code Review',
+    name: 'Code Review +1',
     url: 'http://www.thanatosrealms.com/war2/sounds/humans/knight/acknowledge4.wav',
-    search: 'Code-Review'
+    search: 'Code-Review+1'
+  },
+  {
+    name: 'Code Review -1',
+    url: 'http://www.thanatosrealms.com/war2/sounds/orcs/basic-orc-voices/annoyed5.wav',
+    search: 'Code-Review-1'
   }
 ];
 
@@ -71,8 +76,10 @@ var findLatestEvent = function() {
   // reduce to find which index is greatest
   var htmlText = document.documentElement.innerHTML;
   var firstPatch = htmlText.lastIndexOf('Uploaded patch set 1');
-  var merged = htmlText.lastIndexOf('succesfully merged');
+  var merged = htmlText.lastIndexOf('succesfully merged') || -1;
+  console.log(firstPatch, merged);
   if(!options.mergeNotification && merged > -1){
+    console.log('merged')
     return [emptyDefault];
   }
 
@@ -97,7 +104,8 @@ var playUrl = function (url) {
 
 
 var lookForUpdate = function(){
-  var urlMatch = window.location.href.toString().match(/\/\d+?\/?\d+$/);
+  var urlMatch = window.location.href.toString().match(/\/\d+\/?\d+\/?$/);
+  console.log(urlMatch);
   if (urlMatch && urlMatch.length === 1) {
     setTimeout(function(event){
       setNewMessageObserver();
@@ -106,6 +114,7 @@ var lookForUpdate = function(){
     }, timeout);
   }
 }
+
 lookForUpdate();
 window.addEventListener("hashchange", lookForUpdate);
 
