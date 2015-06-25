@@ -1,11 +1,12 @@
 // ==UserScript==
 // @name         Warcraft CI
 // @namespace    http://your.homepage/
-// @version      1.2.1
+// @version      1.3.0
 // @description  enter something useful
 // @author       Kwyn Meagher
 // @include      https://gerrit.nexgen.neustar.biz/*
 // @grant        none
+// @downloadURL  https://github.com/AK-Scripts/tampermonkey/raw/master/WarcraftCI.user.js
 // ==/UserScript==
 
 // HACK: SPA adds things after document load. 
@@ -18,48 +19,88 @@ I believe the page contains a single link for the author with 'title="user@neust
 so you could have the page check for that string...
 */
 
+var tf2SoundMap = {
+    success:'http://cdn.frustra.org/sounds/sound_tf2/vo/heavy_thanksfortheteleporter03.ogg',
+    failure:'http://cdn.frustra.org/sounds/sound_tf2/vo/demoman_specialcompleted11.ogg',
+    buildStarted:'http://cdn.frustra.org/sounds/sound_tf2/vo/engineer_autobuildingsentry02.ogg',
+    uploadedPatch:'http://cdn.frustra.org/sounds/sound_tf2/vo/SandwichEat09.ogg',
+    comment:'http://cdn.frustra.org/sounds/sound_tf2/vo/scout_stunballhit14.ogg',
+    plusOne:'http://cdn.frustra.org/sounds/sound_tf2/vo/heavy_goodjob01.ogg',
+    minusOne:'http://cdn.frustra.org/sounds/sound_tf2/vo/heavy_negativevocalization04.ogg',
+    minusTwo:'http://cdn.frustra.org/sounds/sound_tf2/vo/heavy_negativevocalization06.ogg'
+};
+
+var warcraftSoundMap = {
+    success:'http://www.thanatosrealms.com/war2/sounds/orcs/basic-orc-voices/work-complete.wav',
+    failure:'http://www.thanatosrealms.com/war2/sounds/orcs/basic-orc-voices/help2.wav',
+    buildStarted:'http://www.thanatosrealms.com/war2/sounds/orcs/peon/ready.wav',
+    uploadedPatch:'http://www.thanatosrealms.com/war2/sounds/orcs/basic-orc-voices/acknowledge1.wav',
+    comment:'http://www.thanatosrealms.com/war2/sounds/humans/elven-archer/annoyed1.wav',
+    plusOne:'http://www.thanatosrealms.com/war2/sounds/humans/knight/acknowledge4.wav',
+    minusOne:'http://www.thanatosrealms.com/war2/sounds/orcs/basic-orc-voices/annoyed5.wav',
+    minusTwo:'http://www.thanatosrealms.com/war2/sounds/humans/dwarven-demolition-squad/annoyed1.wav'
+};
+
+// ...( or add your own custom soundmap here... )
+var customSoundMapTemplate = {
+    success:'',
+    failure:'',
+    buildStarted:'',
+    uploadedPatch:'',
+    comment:'',
+    plusOne:'',
+    minusOne:'',
+    minusTwo:''
+};
+
+// Settings, merge notifications and soundmap
 var options = {
-  mergeNotification: false
+  mergeNotification: false,
+  soundMap: warcraftSoundMap
 };
 
 var audioMap = [
   {
     name: 'Build Success',
-    url:'http://www.thanatosrealms.com/war2/sounds/orcs/basic-orc-voices/work-complete.wav',
+    url:options.soundMap.success,
     search: 'SUCCESS'
   },
   {
     name: 'Build Failure',
-    url: 'http://www.thanatosrealms.com/war2/sounds/orcs/basic-orc-voices/help2.wav',
+    url: options.soundMap.failure,
     search: 'FAILURE'
   },
   {
-    name: 'Build Started',
-    url: 'http://www.thanatosrealms.com/war2/sounds/orcs/peon/ready.wav',
+    name: 'Build Started', 
+      url: options.soundMap.buildStarted,
     search: 'Build Started'
   },
   {
     name: 'Uploaded Patch',
-    url: 'http://www.thanatosrealms.com/war2/sounds/orcs/basic-orc-voices/acknowledge1.wav',
+    url: options.soundMap.uploadedPatch,
     search: 'Uploaded patch set'
   },
   {
     name: 'Comment',
-    url: 'http://www.thanatosrealms.com/war2/sounds/humans/elven-archer/annoyed1.wav',
+    url: options.soundMap.comment,
     search: 'comment'
   },
   {
     name: 'Code Review +1',
-    url: 'http://www.thanatosrealms.com/war2/sounds/humans/knight/acknowledge4.wav',
+      url: options.soundMap.plusOne,
     search: 'Code-Review+1'
   },
   {
     name: 'Code Review -1',
-    url: 'http://www.thanatosrealms.com/war2/sounds/orcs/basic-orc-voices/annoyed5.wav',
+    url: options.soundMap.minusOne,
     search: 'Code-Review-1'
+  },
+  {
+    name: 'Code Review -2',
+    url: options.soundMap.minusTwo,
+    search: 'Code-Review-2'
   }
 ];
-
 
 var setNewMessageObserver = function() {
   var config = { subtree: true, childList: true };
@@ -77,9 +118,7 @@ var findLatestEvent = function() {
   var htmlText = document.documentElement.innerHTML;
   var firstPatch = htmlText.lastIndexOf('Uploaded patch set 1');
   var merged = htmlText.lastIndexOf('succesfully merged') || -1;
-  console.log(firstPatch, merged);
   if(!options.mergeNotification && merged > -1){
-    console.log('merged')
     return [emptyDefault];
   }
 
@@ -102,10 +141,8 @@ var playUrl = function (url) {
   audio.play();
 }
 
-
 var lookForUpdate = function(){
   var urlMatch = window.location.href.toString().match(/\/\d+\/?\d+\/?$/);
-  console.log(urlMatch);
   if (urlMatch && urlMatch.length === 1) {
     setTimeout(function(event){
       setNewMessageObserver();
@@ -117,4 +154,3 @@ var lookForUpdate = function(){
 
 lookForUpdate();
 window.addEventListener("hashchange", lookForUpdate);
-
