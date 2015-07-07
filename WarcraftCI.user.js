@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Warcraft CI
 // @namespace    http://harleykwyn.com/
-// @version      1.3.1
+// @version      1.4.1
 // @description  Audio Notifications for Gerrit
 // @author       Kwyn Meagher
 // @include      https://gerrit.nexgen.neustar.biz/*
@@ -12,12 +12,6 @@
 // HACK: SPA adds things after document load. 
 // Might have to be increased on slower computers.
 var timeout = 1750;
-
-/* TODO:  updates on your own tickets, and on your pair partners, 
-so it would be good to have a "user" list for checking what reviews to trigger notifications on.
-I believe the page contains a single link for the author with 'title="user@neustar.biz"
-so you could have the page check for that string...
-*/
 
 var tf2SoundMap = {
     success:'http://cdn.frustra.org/sounds/sound_tf2/vo/heavy_thanksfortheteleporter03.ogg',
@@ -55,8 +49,13 @@ var customSoundMapTemplate = {
 
 // Settings, merge notifications and soundmap
 var options = {
+  gerritUsername: 'YOURUSERNAME',
+  soundMap: warcraftSoundMap,
+  // Or place star if you want notifications for any open gerrit
+  // Note: capitilzation matters
+  authors: ["Kwyn.Meaher@neustar.biz","johnw@neustar.biz"],
   mergeNotification: false,
-  soundMap: warcraftSoundMap
+  openJenkinsBuilds: false
 };
 
 var audioMap = [
@@ -101,6 +100,17 @@ var audioMap = [
     search: 'Code-Review-2'
   }
 ];
+
+var authorNodeContains = function(arr){
+    var authorHit = 0;
+    for(var c=0,len=arr.length;c<len;c++){
+      // TODO: Remove once fully tested feature
+      console.log("checking for ",arr[c]," in");
+      console.log(document.querySelectorAll('a[title="'+arr[c]+'"]'));
+      authorHit += document.querySelectorAll('a[title="'+arr[c]+'"]').length;  
+    }
+    return authorHit;
+}
 
 var setNewMessageObserver = function() {
   var config = { subtree: true, childList: true };
@@ -151,13 +161,14 @@ var playUrl = function (url) {
 }
 
 var lookForUpdate = function(event){
-  console.log(event);
   var urlMatch = window.location.href.toString().match(/\/\d+\/?\d+\/?$/);
   if (urlMatch && urlMatch.length === 1) {
     setTimeout(function(event){
-      setNewMessageObserver();
-      var latestEvent = findLatestEvent();
-      playUrl(latestEvent.url);
+      if(options.authors === '*' || authorNodeContains(options.authors)){
+        setNewMessageObserver();
+        var latestEvent = findLatestEvent();
+        playUrl(latestEvent.url);
+      }
     }, timeout);
   }
 }
