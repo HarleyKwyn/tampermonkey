@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Warcraft CI
-// @namespace    http://your.homepage/
-// @version      1.3.0
-// @description  enter something useful
+// @namespace    http://harleykwyn.com/
+// @version      1.3.1
+// @description  Audio Notifications for Gerrit
 // @author       Kwyn Meagher
 // @include      https://gerrit.nexgen.neustar.biz/*
 // @grant        none
@@ -105,7 +105,16 @@ var audioMap = [
 var setNewMessageObserver = function() {
   var config = { subtree: true, childList: true };
   var observer = new MutationObserver(function(mutations){
-    document.location.reload();
+    for(var j = 0; j < mutations.length; j++){
+      var mutation = mutations[j];
+      if(mutation.addedNodes.length){
+        for(var i = 0; i < mutation.addedNodes.length; i++){
+          if(mutation.addedNodes[i].innerHTML.indexOf('UpdateAvailableBar') > -1){
+            document.location.reload();
+          }
+        }
+      }
+    }
   });
   // Yellow notification is added to the last screen element when comments are submitted
   var watchElement = document.getElementsByClassName("screen")[0].lastChild;
@@ -141,7 +150,8 @@ var playUrl = function (url) {
   audio.play();
 }
 
-var lookForUpdate = function(){
+var lookForUpdate = function(event){
+  console.log(event);
   var urlMatch = window.location.href.toString().match(/\/\d+\/?\d+\/?$/);
   if (urlMatch && urlMatch.length === 1) {
     setTimeout(function(event){
