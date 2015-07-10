@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Gerrit Audio Notifications
 // @namespace    http://harleykwyn.com/
-// @version      1.4.2
+// @version      1.4.3
 // @description  Audio Notifications for Gerrit
 // @author       Kwyn Meagher
 // @include      https://gerrit.nexgen.neustar.biz/*
@@ -51,7 +51,7 @@ var defaultSettings = {
   timeout:1750,
   // Or place star if you want notifications for any open gerrit
   // Note: capitilzation matters
-  watchedAuthors: ["Kwyn.Meaher@neustar.biz","Emma.Tang@neustar.biz","Shinsaku.Uesugi@neustar.biz", "Wei.Huang@neustar.biz"],
+  watchedAuthors: '*',
   mergeNotification: false,
   openJenkinsBuilds: false
 };
