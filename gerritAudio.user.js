@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Gerrit Audio Notifications
 // @namespace    http://harleykwyn.com/
-// @version      1.4.1
+// @version      1.4.2
 // @description  Audio Notifications for Gerrit
 // @author       Kwyn Meagher
 // @include      https://gerrit.nexgen.neustar.biz/*
@@ -128,10 +128,11 @@ var lookForUpdate = function (event) {
 
 var initializeScript = function () {
   settings = localStorage.getItem("gerritAudioSettings");
-  console.log(settings);
   if(!settings){
     settings = defaultSettings;
     console.log("Using Defailt settings. Run Bookmarklet to set custom settings");
+  } else {
+    settings = JSON.parse(settings);
   }
   audioMap = [
     {

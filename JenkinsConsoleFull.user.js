@@ -10,7 +10,6 @@
 // ==/UserScript==
 jQuery(function() {
   var consoleTask, newTask;
-  console.log( "ready!" );
   var tasks = jQuery('#tasks')[0].children;
   
   for (var i = 0; i < tasks.length; i++) {
