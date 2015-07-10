@@ -1,17 +1,13 @@
 // ==UserScript==
-// @name         Warcraft CI
+// @name         Gerrit Audio Notifications
 // @namespace    http://harleykwyn.com/
 // @version      1.4.1
 // @description  Audio Notifications for Gerrit
 // @author       Kwyn Meagher
 // @include      https://gerrit.nexgen.neustar.biz/*
 // @grant        none
-// @downloadURL  https://github.com/AK-Scripts/tampermonkey/raw/master/WarcraftCI.user.js
+// @downloadURL  https://github.com/AK-Scripts/tampermonkey/raw/master/gerritAudio.user.js
 // ==/UserScript==
-
-// HACK: SPA adds things after document load. 
-// Might have to be increased on slower computers.
-var timeout = 1750;
 
 var tf2SoundMap = {
     success:'http://cdn.frustra.org/sounds/sound_tf2/vo/heavy_thanksfortheteleporter03.ogg',
@@ -46,73 +42,30 @@ var customSoundMapTemplate = {
     minusOne:'',
     minusTwo:''
 };
-
+var settings, audioMap;
 // Settings, merge notifications and soundmap
-var options = {
-  gerritUsername: 'YOURUSERNAME',
+var defaultSettings = {
   soundMap: warcraftSoundMap,
+  // HACK: SPA adds things after document load. 
+  // Might have to be increased on slower computers.
+  timeout:1750,
   // Or place star if you want notifications for any open gerrit
   // Note: capitilzation matters
-  authors: ["Kwyn.Meaher@neustar.biz","johnw@neustar.biz"],
+  watchedAuthors: ["Kwyn.Meaher@neustar.biz","Emma.Tang@neustar.biz","Shinsaku.Uesugi@neustar.biz", "Wei.Huang@neustar.biz"],
   mergeNotification: false,
   openJenkinsBuilds: false
 };
 
-var audioMap = [
-  {
-    name: 'Build Success',
-    url:options.soundMap.success,
-    search: 'SUCCESS'
-  },
-  {
-    name: 'Build Failure',
-    url: options.soundMap.failure,
-    search: 'FAILURE'
-  },
-  {
-    name: 'Build Started', 
-      url: options.soundMap.buildStarted,
-    search: 'Build Started'
-  },
-  {
-    name: 'Uploaded Patch',
-    url: options.soundMap.uploadedPatch,
-    search: 'Uploaded patch set'
-  },
-  {
-    name: 'Comment',
-    url: options.soundMap.comment,
-    search: 'comment'
-  },
-  {
-    name: 'Code Review +1',
-      url: options.soundMap.plusOne,
-    search: 'Code-Review+1'
-  },
-  {
-    name: 'Code Review -1',
-    url: options.soundMap.minusOne,
-    search: 'Code-Review-1'
-  },
-  {
-    name: 'Code Review -2',
-    url: options.soundMap.minusTwo,
-    search: 'Code-Review-2'
-  }
-];
-
-var authorNodeContains = function(arr){
+var authorNodeContains = function (arr) {
     var authorHit = 0;
     for(var c=0,len=arr.length;c<len;c++){
-      // TODO: Remove once fully tested feature
-      console.log("checking for ",arr[c]," in");
-      console.log(document.querySelectorAll('a[title="'+arr[c]+'"]'));
+      // TODO: Perhaps use the getElementById using change_infoTable
       authorHit += document.querySelectorAll('a[title="'+arr[c]+'"]').length;  
     }
     return authorHit;
-}
+};
 
-var setNewMessageObserver = function() {
+var setNewMessageObserver = function () {
   var config = { subtree: true, childList: true };
   var observer = new MutationObserver(function(mutations){
     for(var j = 0; j < mutations.length; j++){
@@ -129,15 +82,15 @@ var setNewMessageObserver = function() {
   // Yellow notification is added to the last screen element when comments are submitted
   var watchElement = document.getElementsByClassName("screen")[0].lastChild;
   observer.observe(watchElement, config);
-}
+};
 
-var findLatestEvent = function() {
+var findLatestEvent = function () {
   var emptyDefault = { htmlIndex: -1, url: ''};
   // reduce to find which index is greatest
   var htmlText = document.documentElement.innerHTML;
   var firstPatch = htmlText.lastIndexOf('Uploaded patch set 1');
   var merged = htmlText.lastIndexOf('succesfully merged') || -1;
-  if(!options.mergeNotification && merged > -1){
+  if(!settings.mergeNotification && merged > -1){
     return [emptyDefault];
   }
 
@@ -152,26 +105,78 @@ var findLatestEvent = function() {
       return latest;
     }
   }, emptyDefault);
-}
+};
 
 var playUrl = function (url) {
   var audio = document.createElement('audio');
   audio.src = url;
   audio.play();
-}
+};
 
-var lookForUpdate = function(event){
+var lookForUpdate = function (event) {
   var urlMatch = window.location.href.toString().match(/\/\d+\/?\d+\/?$/);
   if (urlMatch && urlMatch.length === 1) {
     setTimeout(function(event){
-      if(options.authors === '*' || authorNodeContains(options.authors)){
+      if(settings.watchedAuthors === '*' || authorNodeContains(settings.watchedAuthors)){
         setNewMessageObserver();
         var latestEvent = findLatestEvent();
         playUrl(latestEvent.url);
       }
-    }, timeout);
+    }, settings.timeout);
   }
-}
+};
 
+var initializeScript = function () {
+  settings = localStorage.getItem("gerritAudioSettings");
+  console.log(settings);
+  if(!settings){
+    settings = defaultSettings;
+    console.log("Using Defailt settings. Run Bookmarklet to set custom settings");
+  }
+  audioMap = [
+    {
+      name: 'Build Success',
+      url:settings.soundMap.success,
+      search: 'SUCCESS'
+    },
+    {
+      name: 'Build Failure',
+      url: settings.soundMap.failure,
+      search: 'FAILURE'
+    },
+    {
+      name: 'Build Started', 
+      url: settings.soundMap.buildStarted,
+      search: 'Build Started'
+    },
+    {
+      name: 'Uploaded Patch',
+      url: settings.soundMap.uploadedPatch,
+      search: 'Uploaded patch set'
+    },
+    {
+      name: 'Comment',
+      url: settings.soundMap.comment,
+      search: 'comment'
+    },
+    {
+      name: 'Code Review +1',
+        url: settings.soundMap.plusOne,
+      search: 'Code-Review+1'
+    },
+    {
+      name: 'Code Review -1',
+      url: settings.soundMap.minusOne,
+      search: 'Code-Review-1'
+    },
+    {
+      name: 'Code Review -2',
+      url: settings.soundMap.minusTwo,
+      search: 'Code-Review-2'
+    }
+  ];
+};
+
+initializeScript();
 lookForUpdate();
 window.addEventListener("hashchange", lookForUpdate);
