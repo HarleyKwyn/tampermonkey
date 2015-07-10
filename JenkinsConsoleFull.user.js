@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Jenkins consoleFull Button
 // @namespace    http://harleykwyn.com/
-// @version      1.0.0
+// @version      1.0.1
 // @description  Add a button to full console output for Jenkins
 // @author       Kwyn Meagher
 // @include      https://neustar.ci.cloudbees.com/job/*
@@ -14,12 +14,11 @@ jQuery(function() {
   
   for (var i = 0; i < tasks.length; i++) {
     var task = tasks[i];
-    var title = task.innerText.toLowerCase();
+    var title = task.innerHTML.toLowerCase();
     
     if(title.indexOf('console output') > -1){
       consoleTask = jQuery(task);
       newTask = consoleTask.clone();
-      newTask.innerText = "Full Console Output";
       var newTaskLinks = newTask.find('a');
       
       for (var j = 0; j < newTaskLinks.length; j++) {
@@ -27,7 +26,7 @@ jQuery(function() {
         var oldHref = link.href;
         var newHref = oldHref+'Full'
         if(link.className === 'task-link'){
-          link.innerText ='Full Console Output';
+          jQuery(link).text('Full Console Output');
         }
         newTaskLinks[j].href = newHref;
       };  
