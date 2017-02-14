@@ -10,7 +10,7 @@
 
 (function() {
     'use strict';
-    var paymentTotal = prompt("How much would you liek to pay?");
+    var paymentTotal = prompt("How much would you like to pay?");
     var loan_table_class = "specifyPaymentTable";
     var interest_rate_cell_class = "tdSecondCell";
     var interest_rate_regex = /(\d.\d+)%/;
