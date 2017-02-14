@@ -27,7 +27,7 @@
     function fillInputValue(row, amount) {
       var input = row.getElementsByTagName('input')[0];
       input.value = amount;
-      input.dispatchEvent('change');
+      input.dispatchEvent(new Event('change'));
     }
 
     var rates = rows.map(getInterestRate);
